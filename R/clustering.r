@@ -1,14 +1,16 @@
 #' Cluster a set of neurons
 #'
-#' Given a vector of neuron identifiers use hclust to carry out a
-#' hierarchical clustering. The default value of distfun will handle square
-#' distance matrices and R.
+#' Given an nblast all by all score matrix (which may be specified by a package
+#' default) and/or a vector of neuron identifiers use \code{\link{hclust}} to
+#' carry out a hierarchical clustering. The default value of the \code{distfun}
+#' argument will handle square distance matrices and R \code{dist} objects.
+#'
 #' @param neuron_names character vector of neuron identifiers.
 #' @param method clustering method (default Ward's).
 #' @param scoremat score matrix to use (see \code{sub_score_mat} for details of
 #'   default).
 #' @param distfun function to convert distance matrix returned by
-#'   \code{sub_dist_mat} into R dist object (default=as.dist).
+#'   \code{sub_dist_mat} into R dist object (default= \code{\link{as.dist}}).
 #' @param ... additional parameters passed to hclust.
 #' @inheritParams sub_dist_mat
 #' @return An object of class \code{\link{hclust}} which describes the tree
@@ -32,7 +34,14 @@
 #' plot3d(hckcs, k=3, db=kcs20)
 #' # names of neurons in 3 groups
 #' subset(hckcs, k=3)
+#' @importFrom stats hclust
 nhclust <- function(neuron_names, method='ward', scoremat=NULL, distfun=as.dist, ..., maxneurons=4000) {
+  if(!missing(neuron_names) && is.matrix(neuron_names) && is.numeric(neuron_names)){
+    scoremat=neuron_names
+    warning("Assuming that first argument is a score matrix - please call like:\n",
+            "  nhclust(scoremat=",deparse(substitute(neuron_names)),") in future!")
+    neuron_names=NULL
+  }
   subdistmat <- sub_dist_mat(neuron_names, scoremat, maxneurons=maxneurons)
   if(min(subdistmat) < 0)
     stop("Negative distances not allowed. Are you sure this is a distance matrix?")
@@ -57,6 +66,7 @@ nhclust <- function(neuron_names, method='ward', scoremat=NULL, distfun=as.dist,
 #' @seealso
 #' \code{\link{nhclust}, \link[rgl]{plot3d}, \link{slice}, \link{colour_clusters}}
 #' @importFrom dendroextras slice
+#' @importFrom grDevices rainbow
 #' @examples
 #' # 20 Kenyon cells
 #' data(kcs20, package='nat')

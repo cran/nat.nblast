@@ -1,4 +1,6 @@
 # nat.nblast
+[![Release Version](https://img.shields.io/github/release/jefferislab/nat.nblast.svg)](https://github.com/jefferislab/nat.nblast/releases/latest) 
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/nat.nblast)](https://cran.r-project.org/package=nat.nblast) 
 [![Build Status](https://travis-ci.org/jefferislab/nat.nblast.svg?branch=master)](https://travis-ci.org/jefferislab/nat.nblast)
 
 ## Quick Start
@@ -40,16 +42,24 @@ These tools are designed as an addon for the [NeuroAnatomy Toolbox](https://gith
 which you must first install.
 
 ## Installation
-There is currently no released version of **nat.nblast** on CRAN. Although 
-**nat** is available on CRAN, it it recommended that you install the development
-version of both packages from github; **nat.nblast** is evolving fast and has required
-several minor tweaks to **nat**, which is otherwise quite mature.
+This package has now been released to [CRAN](https://cran.r-project.org/package=nat.nblast)
+(as of v1.5), but since this is the first official release,
+you may wish to install the development version from GitHub, especially if you notice a bug.
+Although **nat** (the main dependency) is available on [CRAN](https://cran.r-project.org/package=nat),
+it it recommended that you install the development version of both packages 
+if you want to install the development version of **nat.nblast**: **nat.nblast** is evolving fast 
+and has required several minor tweaks to **nat**, which is otherwise quite mature.
 
-### Bleeding Edge
+### CRAN release
+```r
+install.packages("nat.nblast")
+```
+
+### Development version
 You can download the [tar ball](https://github.com/jefferislab/nat.nblast/tarball/master),
 and run `R CMD INSTALL` on it, or (recommended) use the **devtools** package to install the development version:
 
-  ```r
+```r
 # install devtools if required
 if (!require("devtools")) install.packages("devtools")
 # then install nat
