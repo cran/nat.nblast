@@ -35,7 +35,7 @@
 #' @param dotprodbreaks a vector specifying the breaks for dot products in the
 #'   probability matrix.
 #' @param ... extra arguments to pass to \code{\link{NeuriteBlast}} or options
-#'   for the call to \code{\link[plyr]{mlply}} call that actaully iterates over
+#'   for the call to \code{\link[plyr]{mlply}} call that actually iterates over
 #'   neuron pairs.
 #' @inheritParams calc_score_matrix
 #'
@@ -46,7 +46,7 @@
 #' @seealso \code{\link{calc_score_matrix}, \link{calc_prob_mat},
 #'   \link{calc_dists_dotprods}, \link{neuron_pairs}}
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # calculate scoring matrix
 #' # bring in some mushroom body neurons
 #' library(nat)
@@ -57,8 +57,9 @@
 #' # we will use both all kcs vs all fctraces20 and fctraces20 vs fctraces20
 #' # as random_pairs to make the null distribution
 #' random_pairs=rbind(neuron_pairs(fctraces20), neuron_pairs(nat::kcs20, fctraces20))
+#' # you can add .progress='text' if this looks like taking a while
 #' smat=create_scoringmatrix(kcs20, c(kcs20, fctraces20.dps),
-#'                           non_matching_subset=random_pairs, .progress='text')
+#'                           non_matching_subset=random_pairs)
 #'
 #' # now plot the scoring matrix
 #' distbreaks=attr(smat,'distbreaks')
@@ -102,7 +103,7 @@ create_scoringmatrix <- function(matching_neurons, nonmatching_neurons,
 #' Calculate distances and dot products between two sets of neurons
 #'
 #' @details Distances and dot products are the raw inputs for constructing
-#'   scoring matrices for the nblast search algorithm.
+#'   scoring matrices for the NBLAST search algorithm.
 #' @param query_neurons a \code{\link[nat]{neuronlist}} to use for calculating
 #'   distances and dot products.
 #' @param target_neurons a further \code{\link[nat]{neuronlist}} to use for
@@ -116,7 +117,7 @@ create_scoringmatrix <- function(matching_neurons, nonmatching_neurons,
 #' @param ... extra arguments to pass to \code{\link{NeuriteBlast}}.
 #'
 #' @return A list, one element for for pair of neurons with a 2 column
-#'   data.frame containing one column of distances and s secon of absolute dot
+#'   data.frame containing one column of distances and another of absolute dot
 #'   products.
 #' @importFrom plyr mlply
 #' @export
@@ -144,8 +145,8 @@ calc_dists_dotprods <- function(query_neurons, target_neurons, subset=NULL, igno
 
 #' Utility function to generate all or random pairs of neurons
 #'
-#' @param query,target either neuronlists or character vectors of names. If
-#'   target is missing, query will be used as both query and target.
+#' @param query,target either \code{\link{neuronlist}}s or character vectors of
+#'   names. If target is missing, query will be used as both query and target.
 #' @param n number of random pairs to draw. When NA, the default, uses
 #'   \code{expand.grid} to draw all pairs.
 #' @param ignoreSelf Logical indicating whether to omit pairs consisting of the

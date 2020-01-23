@@ -1,19 +1,56 @@
-#' Display two neurons with segments coloured by similarity
+#' Display two neurons with segments in the query coloured by similarity
 #'
-#' @param n1 a neuron to compare and colour.
-#' @param n2 the neuron to compare against.
-#' @param smat a score matrix.
-#' @param cols the function to use to colour the segments (e.g. \code{\link{heat.colors}}).
-#' @param col the colour with which to draw the comparison neuron.
-#' @param AbsoluteScale logical indicating whether the colours should be calculated based on the minimum and maximum similarities for the neuron (\code{AbsoluteScale = FALSE}) or on the minimum and maximum possible for all neurons.
-#' @param PlotVectors logical indicating whether the vectors of the \code{dotprops} representation should be plotted. If \code{FALSE}, only the points are plotted.
+#' By default, the query neuron will be drawn with its segments shaded from red
+#' to blue, with red indicating a poor match to the target segments, and blue a
+#' good match.
+#'
+#' @param query a neuron to compare and colour.
+#' @param target the neuron to compare against.
+#' @param smat a score matrix (if \code{NULL}, defaults to \code{smat.fcwb}).
+#' @param cols the function to use to colour the segments (e.g.
+#'   \code{\link{heat.colors}}).
+#' @param col the colour with which to draw the target neuron.
+#' @param AbsoluteScale logical indicating whether the colours should be
+#'   calculated based on the minimum and maximum similarities for the neuron
+#'   (\code{AbsoluteScale = FALSE}) or on the minimum and maximum possible for
+#'   all neurons.
+#' @param PlotVectors logical indicating whether the vectors of the
+#'   \code{dotprops} representation should be plotted. If \code{FALSE}, only the
+#'   points are plotted.
 #' @param ... extra arguments to pass to \code{\link[rgl]{plot3d}}.
-#' @return \code{show_similarity} is called for the side effect of drawing the plot; a vector of object IDs is returned.
+#' @return \code{show_similarity} is called for the side effect of drawing the
+#'   plot; a vector of object IDs is returned.
 #' @export
 #' @importFrom rgl plot3d
 #' @importFrom grDevices colorRampPalette
-show_similarity <- function(n1, n2, smat=get(getOption('nat.nblast.defaultsmat')), cols=colorRampPalette(c('#0000FF', '#FF0000')), col='black', AbsoluteScale=FALSE, PlotVectors=TRUE, ...) {
-  res <- WeightedNNBasedLinesetMatching.dotprops(n1, n2, NNDistFun=lodsby2dhist, smat=smat, Return='elements')
+#' @seealso The low level function \code{\link{WeightedNNBasedLinesetMatching}}
+#'   is used to retrieve the scores.
+#' @examples
+#' \dontrun{
+#' library(nat)
+#'
+#' # Pull out gamma and alpha-beta neurons
+#' gamma_neurons <- subset(kcs20, type=='gamma')
+#' ab_neurons <- subset(kcs20, type=='ab')
+#'
+#' # Compare two alpha-beta neurons with similar branching, but dissimilar arborisation
+#' clear3d()
+#' show_similarity(ab_neurons[[1]], ab_neurons[[2]])
+#'
+#' # Compare an alpha-beta and a gamma neuron with some similarities and differences
+#' clear3d()
+#' show_similarity(ab_neurons[[1]], gamma_neurons[[3]])
+#' }
+show_similarity <- function(query, target, smat=NULL,
+                            cols=colorRampPalette(c("red", "yellow", "cyan", "navy")),
+                            col='black', AbsoluteScale=FALSE, PlotVectors=TRUE, ...) {
+  if(is.null(smat)) {
+    smat=getOption("nat.nblast.defaultsmat")
+    if(is.null(smat)) smat=nat.nblast::smat.fcwb
+  }
+  if(is.character(smat)) smat=get(smat)
+
+  res <- WeightedNNBasedLinesetMatching.dotprops(target, query, NNDistFun=lodsby2dhist, smat=smat, Return='elements')
 
   if(AbsoluteScale) {
     smat.unique.ordered <- unique(smat)[order(unique(smat))]
@@ -28,10 +65,10 @@ show_similarity <- function(n1, n2, smat=get(getOption('nat.nblast.defaultsmat')
   if(PlotVectors) {
     # We need to duplicate each colour as we are drawing line segments, not points
     segcols <- c(sapply(segcols, function(x) c(x,x)))
-    plot3d(n2, col=col, PlotVectors=TRUE, PlotPoints=FALSE, ...)
-    plot3d(n1, col=segcols, PlotVectors=TRUE, PlotPoints=FALSE, ...)
+    plot3d(target, col=col, PlotVectors=TRUE, PlotPoints=FALSE, ...)
+    plot3d(query, col=segcols, PlotVectors=TRUE, PlotPoints=FALSE, ...)
   } else {
-    plot3d(n2, col=col, PlotVectors=FALSE, PlotPoints=TRUE, ...)
-    plot3d(n1, col=segcols, PlotVectors=FALSE, PlotPoints=TRUE, ...)
+    plot3d(target, col=col, PlotVectors=FALSE, PlotPoints=TRUE, ...)
+    plot3d(query, col=segcols, PlotVectors=FALSE, PlotPoints=TRUE, ...)
   }
 }
