@@ -22,8 +22,8 @@
 #'
 #'   Internally, the \code{\link{plyr}} package is used to provide options for
 #'   parallelising NBLAST and displaying progress. To display a progress bar as
-#'   the scores are computed, add \code{.progress="text"} to the arguments
-#'   (non-text progress bars are available -- see
+#'   the scores are computed, add \code{.progress="natprogress"} to the
+#'   arguments (non-text progress bars are available -- see
 #'   \code{\link[plyr]{create_progress_bar}}). To parallelise, add
 #'   \code{.parallel=TRUE} to the arguments. In order to make use of parallel
 #'   calculation, you must register a parallel backend that will distribute the
@@ -105,19 +105,18 @@
 #' @references Kohl, J. Ostrovsky, A.D., Frechter, S., and Jefferis, G.S.X.E
 #'   (2013). A bidirectional circuit switch reroutes pheromone signals in male
 #'   and female brains. Cell 155 (7), 1610--23
-#'   \href{http://dx.doi.org/10.1016/j.cell.2013.11.025}{doi:
-#'   10.1016/j.cell.2013.11.025}.
+#'   \doi{10.1016/j.cell.2013.11.025}.
 #'
 #'   Costa, M., Ostrovsky, A.D., Manton, J.D., Prohaska, S., and Jefferis,
 #'   G.S.X.E. (2014). NBLAST: Rapid, sensitive comparison of neuronal structure
 #'   and construction of neuron family databases. bioRxiv preprint.
-#'   \href{http://dx.doi.org/10.1101/006346}{doi: 10.1101/006346}.
+#'   \doi{10.1101/006346}.
 #'
 #'   Jefferis G.S.X.E., Potter C.J., Chan A.M., Marin E.C., Rohlfing T., Maurer
 #'   C.R.J., and Luo L. (2007). Comprehensive maps of Drosophila higher
 #'   olfactory centers: spatially segregated fruit and pheromone representation.
 #'   Cell 128 (6), 1187--1203.
-#'   \href{http://dx.doi.org/10.1016/j.cell.2007.01.040}{doi:10.1016/j.cell.2007.01.040}
+#'   \doi{10.1016/j.cell.2007.01.040}
 #'
 #'
 #'
@@ -149,7 +148,7 @@
 #'
 #' # normalised scores (i.e. self match = 1) of all neurons vs each other
 #' # note use of progress bar
-#' scores.norm=nblast(kcs20, kcs20, normalised = TRUE, .progress="text")
+#' scores.norm=nblast(kcs20, kcs20, normalised = TRUE, .progress="natprogress")
 #' hist(scores.norm, breaks=25, col='grey')
 #' # produce a heatmap from normalised scores
 #' jet.colors <- colorRampPalette( c("blue", "green", "yellow", "red") )
@@ -289,8 +288,13 @@ NeuriteBlast <- function(query, target, targetBinds=NULL, normalised=FALSE,
   if(nat::is.neuronlist(query)) {
     res=plyr::llply(query, NeuriteBlast, target=target, targetBinds=targetBinds,
                   normalised=normalised, OmitFailures=OmitFailures, simplify=simplify, ...=...)
-    if (!identical(simplify, FALSE) && length(res))
+    if (!identical(simplify, FALSE) && length(res)){
+      if(normalised)
+        selfscores=sapply(res, "attr", "scaled:scale")
       res=simplify2array(res, higher = (simplify == "array"))
+      if(normalised)
+        attr(res,'scaled:scale')=selfscores
+    }
     return(res)
   } else {
     if(is.null(targetBinds))
@@ -315,8 +319,12 @@ NeuriteBlast <- function(query, target, targetBinds=NULL, normalised=FALSE,
   }
 
   if(normalised){
-    if(is.list(scores)) stop("Cannot normalise results when they are not a single number")
-    scores=scores/NeuriteBlast(query, neuronlist(query), normalised=FALSE, ...)
+    if(is.list(scores))
+      stop("Cannot normalise results when they are not a single number")
+    # nb roll our own scale, since scale turns vector into matrix
+    selfscore=NeuriteBlast(query, neuronlist(query), normalised=FALSE, ...)
+    scores=scores/selfscore
+    attr(scores,'scaled:scale')=selfscore
   }
   scores
 }
@@ -401,7 +409,7 @@ WeightedNNBasedLinesetMatching.neuron<-function(target, query, UseAlpha=FALSE,
   WeightedNNBasedLinesetMatching(target, query, ...)
 }
 
-
+#' @export
 WeightedNNBasedLinesetMatching.default<-function(target,query,dvs1=NULL,dvs2=NULL,alphas1=NULL,
                                         alphas2=NULL,NNDistFun=WeightedNNBasedLinesetDistFun,Verbose=FALSE,
                                         BothDirections=FALSE,BothDirectionsFun=list,OnlyClosestPoints=FALSE,...){
